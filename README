@@ -1,0 +1,5 @@
+Pin mappings:
+PIC_CLK(9) - GREEN - GPIO23 
+PIC_DAT(10) - GREY - GPIO24
+VPP_MCLR(4) - BROWN - GPIO25
+
