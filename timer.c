@@ -76,7 +76,7 @@ void main(void)
 
 	while (1){
 		for (i=0; i<100; i++)
-			usleep(10000);
+			usleep(100);
 
 		rc_val = !rc_val;
 		RC2 = rc_val;
