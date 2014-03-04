@@ -1,27 +1,11 @@
 #include <stdint.h>
 #include "pic14/pic16f1454.h"
 
-unsigned int __at(_CONFIG1) configWord1 =
-        _FOSC_INTOSC &
-        _WDTE_OFF &
-        _PWRTE_OFF &
-        _MCLRE_OFF &
-        _CP_OFF &
-        _BOREN_ON &
-        _CLKOUTEN_OFF &
-        _IESO_OFF &
-        _FCMEN_ON;
-
-unsigned int __at(_CONFIG2) configWord2 = 0x3fff & (~(1<<8));
-
-typedef union timer_time {
-	char high_byte, low_byte;
-	unsigned int word;
-};
+#include "timer/timer.h"
 
 union timer_time timer_data;
 
-void clock_init(void)
+void clock_init()
 {
         //clock is 16MHz
         SCS1 = 0;
@@ -32,7 +16,7 @@ void clock_init(void)
         IRCF0 = 1;
 }
 
-void timer1_init_1us(void)
+void timer1_init_1us()
 {
 	//set timer 1 to use Fosc/4
 	TMR1CS1 = 0;
@@ -63,22 +47,3 @@ void usleep(unsigned int num)
 	} while (current_time.word < num);
 }
 
-void main(void)
-{
-	int i;
-	char rc_val = 0;
-	clock_init();
-
-	timer1_init_1us();
-
-	TRISC = ~(1<<2);
-	RC2 = rc_val;
-
-	while (1){
-		for (i=0; i<100; i++)
-			usleep(100);
-
-		rc_val = !rc_val;
-		RC2 = rc_val;
-	} 
-}
