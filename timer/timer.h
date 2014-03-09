@@ -8,6 +8,8 @@ typedef union timer_time {
 
 void clock_init();
 void timer1_init_1us();
-void usleep(unsigned int num);
+void timer0_init_1us();
+uint8_t timer0_get_time();
+void usleep(uint8_t num);
 
 #endif /* __PIC_TIMER_H__ */

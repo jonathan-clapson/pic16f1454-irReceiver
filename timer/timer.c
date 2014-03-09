@@ -7,13 +7,30 @@ union timer_time timer_data;
 
 void clock_init()
 {
-        //clock is 16MHz
+        /* clock source set by config words */
         SCS1 = 0;
         SCS0 = 0;
+	/* clock divider set to 16MHz */
         IRCF3 = 1;
         IRCF2 = 1;
         IRCF1 = 1;
         IRCF0 = 1;
+}
+
+void timer0_init_1us()
+{
+	/* set timer 0 to timer mode */
+	TMR0CS = 0;
+
+	/* 
+	 *timer 0 clk starts at clk(16MHz)/4 = 4MHz
+	 * divide by 4 to get 1MHz
+	 */
+	PS2=0;
+	PS1=0;
+	PS0=1;
+	/* enable pre-scaler */
+	PSA = 1;
 }
 
 void timer1_init_1us()
@@ -32,7 +49,21 @@ void timer1_init_1us()
 	TMR1ON = 1;
 }
 
-void usleep(unsigned int num)
+uint8_t timer0_get_time()
+{
+	return TMR0;	
+}
+
+void usleep(uint8_t num)
+{
+	uint8_t timer = TMR0, expire_timer = TMR0+num;
+	
+	while(timer < num){
+		timer = TMR0;
+	}
+}
+
+void usleep_t1(uint8_t num)
 {
 	union timer_time current_time;
 

@@ -29,7 +29,7 @@ void main(void)
 
 	while (1){
 		for (i=0; i<100; i++)
-			usleep(100);
+			usleep(1200);
 
 		rc_val = !rc_val;
 		RC2 = rc_val;
