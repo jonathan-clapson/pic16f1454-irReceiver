@@ -10,6 +10,8 @@ int hard_uart_putc_bl(uint8_t data);
 int hard_uart_getc_bl(uint8_t *data);
 int hard_uart_getc_nb(uint8_t *data);
 
+int hard_uart_puts_bl(uint8_t *data);
+
 void hard_uart_init();
 
 #endif /* __PIC_HARD_UART_H__ */

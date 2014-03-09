@@ -16,10 +16,20 @@ unsigned int __at(_CONFIG1) configWord1 =
 
 unsigned int __at(_CONFIG2) configWord2 = 0x3fff & (~(1<<8));
 
+void set_cpu_periph_clock_freq()
+{
+	IRCF0 = 1;
+	IRCF1 = 1;
+	IRCF2 = 1;
+	IRCF3 = 1;
+}
+
 void main(void)
 {
 	unsigned int delay_count = 0;	
 	int local_portc = 0;
+
+	set_cpu_periph_clock_freq();
 
 	uart_init();
 

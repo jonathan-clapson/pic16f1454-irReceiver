@@ -12,6 +12,9 @@
 #define uart_putc_nb(X)		hard_uart_putc_nb(X)
 #define uart_putc_bl(X)		hard_uart_putc_bl(X)
 #define uart_putc(X)		hard_uart_putc_bl(X)
+
+#define uart_puts_bl(X)		hard_uart_puts_bl(X)
+#define uart_puts(X)		hard_uart_puts_bl(X)
 #else
 #include "uart/soft_uart.h"
 #define uart_init() 		soft_uart_init()
