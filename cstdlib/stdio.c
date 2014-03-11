@@ -1,6 +1,8 @@
 #include "stdio.h"
 #include "../uart/uart.h"
 
+#define MAX_NUM_SIZE 15
+
 int strncat(char *dest, size_t n, const char *src)
 {
 	uint16_t i;
@@ -22,6 +24,8 @@ int snprintf(char *dest, size_t n, const char *fmt, char *ptr)
 	int16_t d;
 	uint16_t u;
 	int dest_offset = 0;
+	char num_buffer[MAX_NUM_SIZE];
+	char num_offset = 0;
 
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
@@ -41,41 +45,51 @@ int snprintf(char *dest, size_t n, const char *fmt, char *ptr)
 					dest[dest_offset] = '-';
 					dest_offset++;
 				}
-				/* convert number */
 				do {
-					/* store the lowest digit */
-					dest[dest_offset] = '0' + d%10;
-					dest_offset++;
-					/* remove the lowest digit */
+					/* store digits from lowest first */
+					num_buffer[num_offset] = '0' + d%10;
+					num_offset++;
 					d/=10;
+				} while(d);
 
-					/* check bounds */
-					if (dest_offset>n-1) {
-
-						dest[dest_offset]='\0';
-						return -1;
-					}
-				} while (u);
+				/* check what we're about to copy won't exceed buffer */
+				if (dest_offset+num_offset>n-1) {
+					uart_puts("#ov");
+					dest[dest_offset] = '\0';
+					return -1;
+				}
+				num_offset--;
+				for (; num_offset >= 0; num_offset--){
+					dest[dest_offset] = num_buffer[num_offset];
+					dest_offset++;
+				}
 				break;
 			case 'u':
-				/* convert number */
 				u = (uint16_t) *ptr;
 				do {
-					dest[dest_offset] = '0' + u%10;
-					dest_offset++;
+					/* store digits from lowest first */
+					num_buffer[num_offset] = '0' + u%10;
+					num_offset++;
 					u/=10;
-				} while (u);
-				
-				/* check bounds */
-				if (dest_offset>n-1) {
-					dest[dest_offset]='0';
+				} while(u);
+
+				/* check what we're about to copy won't exceed buffer */
+				if (dest_offset+num_offset>n-1) {
+					uart_puts("#ov");
+					dest[dest_offset] = '\0';
 					return -1;
+				}
+				num_offset--;
+				for (; num_offset >= 0; num_offset--){
+					dest[dest_offset] = num_buffer[num_offset];
+					dest_offset++;
 				}
 				break;
 			}
 			fmt++;
 		} else { /* *fmt is not % */
-			dest[dest_offset] = *fmt++;
+			dest[dest_offset] = *fmt;
+			*fmt++;
 			dest_offset++;
 		}
 

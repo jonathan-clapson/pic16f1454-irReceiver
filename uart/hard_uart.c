@@ -82,8 +82,9 @@ int hard_uart_getc_nb(uint8_t *data)
 
 int hard_uart_puts_bl(uint8_t *data)
 {
-	for (; *data!='\0'; data++)
+	while (*data) {
 		hard_uart_putc_bl(*data);
-
+		data++;
+	}
 	return 0;
 }

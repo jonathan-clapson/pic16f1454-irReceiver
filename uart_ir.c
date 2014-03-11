@@ -24,32 +24,23 @@ unsigned int __at(_CONFIG2) configWord2 = 0x3fff & (~(1<<8));
 
 static void isr(void) __interrupt 0
 {
-	char out_val[10] = "a";
-	char out_time[10] = "";
-	char out[15] ="";
-	uint8_t ra5 = RA5;
-	uint8_t time = timer0_get_time();
-	
 	if ( IOCAF5 == 1 ) {
 		/* handle */
-		toggle_counter ++;
+		toggle_counter =1;
 	
-		snprintf(out_val, sizeof(out_val), "%d,", &ra5);
-		snprintf(out_time, sizeof(out_time), "%u\r\n", &time);
-		strncat(out, sizeof(out), out_val);
-		strncat(out, sizeof(out), out_time);
-		uart_puts(out);
-
-		/* clear interrupt */
 		IOCAF5 = 0;
 	}
 }
 
 void main(void)
 {
-	uint8_t i, j;
+	int i,j,k;
 	uint8_t ra5_val;
-	uint8_t k;
+	char temp[5];
+	char out[10];
+	uint16_t u;
+	int16_t d;
+	int toggle = 0;
 
 	INTCON = 0;
 
@@ -76,31 +67,27 @@ void main(void)
 	/* enable interrupts */
 	GIE = 1;
 
+	TRISC2 = 0;
+
 	//Loop forever
 	while ( 1 )
 	{
-		/* wait for an ir code */
-/*		while (toggle_counter == 0);
-		uart_putc('1');
-		*/
-		
-
-		
-
-		/* sleep 1s */
-		for (k=0; k<4; k++)
-		for (j=0; j<250; j++)
-
-			/* sleep 1 ms */
-			for(i=0; i<4; i++)
+		/*for (j=0; j<250; j++)
+			for (i=0; i<16; i++)
 				usleep(250);
-
-		ra5_val = RA5;
-
-/*		uart_putc('v');
-		uart_putc(':');
-		uart_putc(IOCAF5+48);
-		uart_putc('\r');
-		uart_putc('\n');*/
+		toggle = !toggle;
+		RC2 = toggle;*/
+		
+		/* wait for an ir code */
+		while (toggle_counter == 0);
+		//u = timer0_get_time();
+		//u = 24533;
+		d = 23412;
+		ra5_val=RA5;
+		snprintf(out, sizeof(out), "%d,", (char *)&ra5_val);
+		snprintf(temp, sizeof(out), "%d\r\n", (char *)&d);
+		strncat(out, sizeof(out), temp);
+		uart_puts(out);
+		toggle_counter = 0;
  	}
 }
