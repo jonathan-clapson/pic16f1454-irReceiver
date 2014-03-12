@@ -36,6 +36,7 @@ void main(void)
 {
 	int i,j,k;
 	uint8_t ra5_val;
+	uint16_t ra5_16;
 	char temp[5];
 	char out[10];
 	uint16_t u;
@@ -84,8 +85,9 @@ void main(void)
 		//u = 24533;
 		d = 23412;
 		ra5_val=RA5;
-		snprintf(out, sizeof(out), "%d,", (char *)&ra5_val);
-		snprintf(temp, sizeof(out), "%d\r\n", (char *)&d);
+		ra5_16 = ra5_val;
+		snprintf(out, sizeof(out), "%d,", &ra5_16);
+		snprintf(temp, sizeof(out), "%d\r\n", &d);
 		strncat(out, sizeof(out), temp);
 		uart_puts(out);
 		toggle_counter = 0;

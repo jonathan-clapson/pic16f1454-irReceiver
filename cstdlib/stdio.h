@@ -5,7 +5,7 @@
 
 typedef uint8_t size_t;
 
-int snprintf(char *dest, size_t n, const char *fmt, char *ptr);
+int snprintf(char *dest, size_t n, const char *fmt, void *ptr);
 int strncat(char *dest, size_t n, const char *source);
 
 #endif /*__STDIO_H__*/

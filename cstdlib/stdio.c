@@ -19,9 +19,10 @@ int strncat(char *dest, size_t n, const char *src)
 	return 0;
 }
 
-int snprintf(char *dest, size_t n, const char *fmt, char *ptr)
+int snprintf(char *dest, size_t n, const char *fmt, void *ptr)
 {
 	int16_t d;
+
 	uint16_t u;
 	int dest_offset = 0;
 	char num_buffer[MAX_NUM_SIZE];
@@ -32,13 +33,13 @@ int snprintf(char *dest, size_t n, const char *fmt, char *ptr)
 			fmt++;
 			switch(*fmt) {
 			case 'c':
-				dest[dest_offset++] = *ptr;
+				dest[dest_offset++] = *((char *) ptr);
 				break;
 			case 's':
-				while(*ptr) dest[dest_offset++] = *ptr++;
+				while(*(char *)ptr) dest[dest_offset++] = *((char *)ptr++);
 				break;
 			case 'd':
-				d = (int16_t) *ptr;
+				d = *((int16_t *) ptr);
 				/* handle negative */
 				if (d < 0) {
 					d = -d;
@@ -49,6 +50,7 @@ int snprintf(char *dest, size_t n, const char *fmt, char *ptr)
 					/* store digits from lowest first */
 					num_buffer[num_offset] = '0' + d%10;
 					num_offset++;
+
 					d/=10;
 				} while(d);
 
@@ -65,7 +67,7 @@ int snprintf(char *dest, size_t n, const char *fmt, char *ptr)
 				}
 				break;
 			case 'u':
-				u = (uint16_t) *ptr;
+				u = *((uint16_t *)ptr);
 				do {
 					/* store digits from lowest first */
 					num_buffer[num_offset] = '0' + u%10;
