@@ -3,8 +3,6 @@
 
 #include "timer/timer.h"
 
-union timer_time timer_data;
-
 void clock_init()
 {
         /* clock source set by config words */
@@ -54,6 +52,14 @@ uint8_t timer0_get_time()
 	return TMR0;	
 }
 
+uint16_t timer1_get_time()
+{
+	union timer_time time;
+	time.byte[0] = TMR1L;
+	time.byte[1] = TMR1H;
+	return time.word;
+}
+
 void usleep(uint8_t num)
 {
 	uint8_t timer = TMR0, expire_timer = TMR0+num;
@@ -73,8 +79,8 @@ void usleep_t1(uint8_t num)
 
 	/* loop until timer expires */
 	do {
-		current_time.low_byte = TMR1L;
-		current_time.high_byte = TMR1H;
+		current_time.byte[0] = TMR1L;
+		current_time.byte[1] = TMR1H;
 	} while (current_time.word < num);
 }
 
