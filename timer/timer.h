@@ -12,5 +12,6 @@ void timer0_init_1us();
 uint8_t timer0_get_time();
 uint16_t timer1_get_time();
 void usleep(uint8_t num);
+void t1_usleep(uint8_t num);
 
 #endif /* __PIC_TIMER_H__ */

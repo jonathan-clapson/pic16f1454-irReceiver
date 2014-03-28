@@ -69,7 +69,7 @@ void usleep(uint8_t num)
 	}
 }
 
-void usleep_t1(uint8_t num)
+void t1_usleep(uint8_t num)
 {
 	union timer_time current_time;
 
