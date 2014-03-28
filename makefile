@@ -4,7 +4,9 @@ INCDIR="./"
 
 UART=PIC_USE_HARD_UART
 
-all: soft_uart_test hard_uart_test timer_test uart_ir stdio
+all: usb_test
+
+test: soft_uart_test hard_uart_test timer_test
 
 #fake c stdlib
 stdio:
@@ -36,6 +38,10 @@ timer_test: timer_obj
 uart_ir: hard_uart_obj timer_obj stdio
 	sdcc $(CFLAGS) -I$(INCDIR) -DPIC_USE_HARD_UART -c uart_ir.c
 	sdcc $(CFLAGS) -DPIC_USE_HARD_UART uart_ir.o hard_uart.o timer.o stdio.o
+
+usb_test: hard_uart_obj timer_obj stdio
+	sdcc $(CFLAGS) -I$(INCDIR) -DNO_BIT_DEFINES -DPIC_USE_HARD_UART -c usb_test.c
+	sdcc $(CFLAGS) -DNO_BIT_DEFINES -DPIC_USE_HARD_UART usb_test.o hard_uart.o timer.o stdio.o
 
 
 #to build multiple files, need to use sdcc -c which will build some sort of temporary intermediate

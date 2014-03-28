@@ -6,3 +6,8 @@ VPP_MCLR(4) - BROWN - GPIO25
 UART pins:
 PIC_TX_RC4(6) - GREEN - FTDI_RX(Yellow) 
 PIC_RX_RC5(5) - GREY - FTDI_TX(Orange)
+
+USB pins
+PIC_D+_RA0(13)
+PIC_D-_RA1(12)
+Both pins can do IOC when usb is disabled
