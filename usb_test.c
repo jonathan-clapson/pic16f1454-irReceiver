@@ -59,7 +59,10 @@ typedef union {
 typedef struct {
 	__BDnSTATbits_t STATbits;
 	uint8_t CNT;
-	uint16_t ADDR;
+	union {
+		uint16_t ADDR;
+		uint8_t ADDRPART[2];
+	};
 } __USB_BD_T;
 __at(0x2000) volatile __USB_BD_T BD0;
 __at(0x2004) volatile __USB_BD_T BD1;
@@ -105,44 +108,57 @@ void service_transaction() {
 }
 
 void service_usb_int() {
-	uart_puts("int!\r\n");
+//	uart_puts("int!\r\n");
 	if (UIRbits.SOFIF) {
-		uart_puts("usb SOFIF\r\n");
+		uart_puts("iusb SOFIF\r\n");
 		// clear interrupt
 		UIRbits.SOFIF = 0;
-	} else if (UIRbits.STALLIF) {
-		uart_puts("usb STALLIF\r\n");
+	} if (UIRbits.STALLIF) {
+		uart_puts("iusb STALLIF\r\n");
 		// clear interrupt
 		UIRbits.STALLIF = 0;
-	} else if (UIRbits.IDLEIF) {
-		uart_puts("usb IDLEIF\r\n");
+	} if (UIRbits.IDLEIF) {
+		uart_puts("iusb IDLEIF\r\n");
+		//should suspend if interface is idle
+		UCONbits.SUSPND = 1;
+		//FIXME: probably need to do additional power management here
 		// clear interrupt
 		UIRbits.IDLEIF = 0;
-	} else if (UIRbits.TRNIF) {
+	} if (UIRbits.TRNIF) {
 		service_transaction();
-		uart_puts("usb TRNIF\r\n");
+		//uart_puts("iusb TRNIF\r\n");
 		UIRbits.TRNIF = 0;
-	} else if (UIRbits.ACTVIF) {
-		uart_puts("usb ACTVIF\r\n");
-		UIRbits.ACTVIF = 0;
-	} else if (UIRbits.UERRIF) {
-		uart_puts("usb UERRIF\r\n");
+	} if (UIRbits.ACTVIF) {
+		//should wake up usb, 
+		//clearing ACTVIF can't be done immediately therefore apply it continously until its set
+		UCONbits.SUSPND = 0;
+		//FIXME: probably need to do additional power management here
+		while (UIRbits.ACTVIF) { 
+			UIRbits.ACTVIF = 0; 
+		}
+		uart_puts("iusb ACTVIF\r\n");
+	} if (UIRbits.UERRIF) {
+		uart_puts("iusb UERRIF\r\n");
 		UIRbits.UERRIF = 0;
-	} else if (UIRbits.URSTIF) {
-		uart_puts("usb URSTIF\r\n");
-		UIRbits.URSTIF = 0;
-	} else {
-		uart_puts("unhandled!\r\n");
-	}
+	} if (UIRbits.URSTIF) {
+		//Host has reset device
+		//wait for se0 to clear, then clear reset
+		if (!UCONbits.SE0) {
+			uart_puts("iADDR");
+			uart_put_uint8(UADDR,1);
+			UIRbits.URSTIF = 0;
+		}
+	} //else {
+	//	uart_puts("unhandled!\r\n");
+	//}
 	return;
 }
 
 void setup_bd0()
 {
 	/* documentation states that BD0 is EP0 out in No ping pong mode */
-
 	/* stat memory */
-	BD0.STATbits.UOWN = 1; //cpu initially owns
+	BD0.STATbits.UOWN = 1; //mcu owns
 	/* enable sync for now */
 	BD0.STATbits.DTSEN = 1;
 	/* Don't stall */
@@ -154,12 +170,18 @@ void setup_bd0()
 	BD0.CNT = USB_EP0_BUFFER_SIZE;
 
 	/* set starting memory address of buffer */
-	BD0.ADDR = (volatile uint16_t) usb_ep0_out_buf;
-
+	BD0.ADDR = (volatile uint16_t) usb_ep0_out_buf;	
+	
+/*	uart_puts("ep0bad0:");
+	uart_put_uint8 ( BD1.ADDRPART[0], 0);
+	uart_put_uint8 ( BD1.ADDRPART[1], 1);
+	*/
 }
+
 void setup_bd1()
 {
 	/* documentation states that BD1 is EP0 in in No ping pong mode */
+	/* stat memory */
 	BD1.STATbits.UOWN = 1; //mcu initially owns
 	/* Enable sync */
 	BD1.STATbits.DTS = 1;
@@ -174,16 +196,24 @@ void setup_bd1()
 
 	/* set starting memory address of buffer */
 	BD1.ADDR = (volatile uint16_t ) usb_ep0_in_buf;
+
+	// once things are set, the usb unit owns
+	BD1.STATbits.UOWN = 0; 	
+/*	uart_puts("ep0bad1:");
+	uart_put_uint8 ( BD1.ADDRPART[0], 0);
+	uart_put_uint8 ( BD1.ADDRPART[1], 1);*/
 }
 
 static void isr(void) __interrupt 0
 {
-uart_puts("isr\n");
+//uart_puts("isr\n");
 	/* check if a usb related interrupt occured */
-	if (PIR2bits.USBIF)
+	if (PIR2bits.USBIF) {
 		service_usb_int();
-	else
+		//PIR2bits.USBIF = 0;
+	} else {
 		core_interrupt();
+	}
 }
 
 void usb_ep0_init()
@@ -200,8 +230,8 @@ void usb_ep0_init()
 	UEP0bits.EPCONDIS = 0;
 
 	//init buffer
-	setup_bd0();
-	setup_bd1();	
+//	setup_bd0();
+//	setup_bd1();	
 }
 
 void usb_init()
@@ -216,27 +246,28 @@ void usb_init()
 
 	UCONbits.PPBRST = 1; //reset ping pong buffers to point to even buffer descriptors
 	//UCONbits.PKTDIS = 0; //not sure what to set this to? says its auto set to one when SETUP packet happens
-	UCONbits.RESUME = 1; //dont pause signalling?
+	//UCONbits.RESUME = 1; //dont pause signalling? /* FIXME: setting this seems to stop the interrupts that seem wrong? */
 	UCONbits.SUSPND = 0; //usb suspend disabled
 
 	UEIR = 0; //clear all usb error bits
 
 	// enable all usb interrupts in UIE
 	UIEbits.URSTIE = 1; // usb reset interrupt
-	UIEbits.UERRIE = 1; //usb error interrupt
+	UIEbits.UERRIE = 0; //usb error interrupt
 	UIEbits.ACTVIE = 1; //bus activity detected interrupt
-	UIEbits.TRNIE = 1; //transaction complete interrupt
+	UIEbits.TRNIE = 0; //transaction complete interrupt
 	UIEbits.IDLEIE = 1; //idle interrupt 
-	UIEbits.STALLIE = 1; //stall interrupt
-	UIEbits.SOFIE = 1; //start of frame token interrupt
+	UIEbits.STALLIE = 0; //stall interrupt
+	UIEbits.SOFIE = 0; //start of frame token interrupt
 
 	// set address to 0 when not configured
 	//UADDR = 0;
 
 	//enable usb interrupts through PIE2
+	PIR2bits.USBIF = 0;
 	PIE2bits.USBIE = 1;
 
-	//usb_ep0_init();
+	usb_ep0_init();
 
 	UCONbits.USBEN = 1; //enable usb module
 }
@@ -280,32 +311,21 @@ void main(void)
 		} else {
 			usb_connect_timer = timer1_get_time();
 		}
-	if (UIRbits.SOFIF) {
+	/*if (UIRbits.SOFIF) {
 		uart_puts("usb SOFIF\r\n");
-		// clear interrupt
-		UIRbits.SOFIF = 0;
 	} else if (UIRbits.STALLIF) {
 		uart_puts("usb STALLIF\r\n");
-		// clear interrupt
-		UIRbits.STALLIF = 0;
 	} else if (UIRbits.IDLEIF) {
 		uart_puts("usb IDLEIF\r\n");
-		// clear interrupt
-		UIRbits.IDLEIF = 0;
 	} else if (UIRbits.TRNIF) {
-		service_transaction();
 		uart_puts("usb TRNIF\r\n");
-		UIRbits.TRNIF = 0;
 	} else if (UIRbits.ACTVIF) {
 		uart_puts("usb ACTVIF\r\n");
-		UIRbits.ACTVIF = 0;
 	} else if (UIRbits.UERRIF) {
 		uart_puts("usb UERRIF\r\n");
-		UIRbits.UERRIF = 0;
 	} else if (UIRbits.URSTIF) {
 		uart_puts("usb URSTIF\r\n");
-		UIRbits.URSTIF = 0;
-	}
+	}*/
 
 	}
 }

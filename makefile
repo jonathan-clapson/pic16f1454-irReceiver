@@ -39,10 +39,12 @@ uart_ir: hard_uart_obj timer_obj stdio
 	sdcc $(CFLAGS) -I$(INCDIR) -DPIC_USE_HARD_UART -c uart_ir.c
 	sdcc $(CFLAGS) -DPIC_USE_HARD_UART uart_ir.o hard_uart.o timer.o stdio.o
 
-usb_test: hard_uart_obj timer_obj stdio
+usb_test: hard_uart_obj timer_obj
 	sdcc $(CFLAGS) -I$(INCDIR) -DNO_BIT_DEFINES -DPIC_USE_HARD_UART -c usb_test.c
-	sdcc $(CFLAGS) -DNO_BIT_DEFINES -DPIC_USE_HARD_UART usb_test.o hard_uart.o timer.o stdio.o
+	sdcc $(CFLAGS) -DNO_BIT_DEFINES -DPIC_USE_HARD_UART usb_test.o hard_uart.o timer.o
 
+program: usb_test
+	k14 lvp program usb_test.hex
 
 #to build multiple files, need to use sdcc -c which will build some sort of temporary intermediate
 # sdcc -c foo1.c
