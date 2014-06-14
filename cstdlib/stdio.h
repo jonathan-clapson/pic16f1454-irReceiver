@@ -1,3 +1,15 @@
+/**
+ * @file stdio.h
+ * @brief Some 'poor man' routines similar to stdio
+ *
+ * Re-implements some of the stdio routines useful for debug messages
+ * The routines are made more suitable for embedded usage
+ *
+ * @author Jonathan Clapson jonathan.clapson@gmail.com
+ * @date 2014
+ * @copyright GNU GENERAL PUBLIC LICENSE version 2
+ */
+
 #ifndef __STDIO_H__
 #define __STDIO_H__
 

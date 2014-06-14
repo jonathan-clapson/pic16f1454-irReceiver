@@ -1,3 +1,8 @@
+# Copyright (c) 2014 Jonathan Clapson
+#
+# The license and distribution terms for this file may
+# be found in the file LICENSE in this distribution.
+
 PIC=16f1454
 CFLAGS=--std-c99 --use-non-free -mpic14 -p$(PIC)
 INCDIR="./"

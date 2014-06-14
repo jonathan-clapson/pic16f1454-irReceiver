@@ -1,3 +1,14 @@
+/**
+ * @file usb_test.c
+ * @brief USB Test
+ *
+ * Working on USB functionality
+ *
+ * @author Jonathan Clapson jonathan.clapson@gmail.com
+ * @date 2014
+ * @copyright GNU GENERAL PUBLIC LICENSE version 2
+ */
+
 //#include "cstdlib/stdint.h"
 #include <stdint.h>
 

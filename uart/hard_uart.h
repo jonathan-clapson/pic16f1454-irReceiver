@@ -1,3 +1,14 @@
+/**
+ * @file hard_uart.h
+ * @brief HAL for Hardware Uart
+ *
+ * Hardware abstraction layer for controlling hardware based uart
+ *
+ * @author Jonathan Clapson jonathan.clapson@gmail.com
+ * @date 2014
+ * @copyright GNU GENERAL PUBLIC LICENSE version 2
+ */
+
 #ifndef __PIC_HARD_UART_H__
 #define __PIC_HARD_UART_H__
 

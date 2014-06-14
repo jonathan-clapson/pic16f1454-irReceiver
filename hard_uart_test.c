@@ -1,3 +1,14 @@
+/**
+ * @file hard_uart_test.c
+ * @brief Hardware Uart Test
+ *
+ * Program to test hardware uart functionality
+ *
+ * @author Jonathan Clapson jonathan.clapson@gmail.com
+ * @date 2014
+ * @copyright GNU GENERAL PUBLIC LICENSE version 2
+ */
+
 #include <stdint.h>
 #include "pic14/pic16f1454.h"
 

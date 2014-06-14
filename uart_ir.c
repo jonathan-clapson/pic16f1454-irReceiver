@@ -1,3 +1,15 @@
+/**
+ * @file uart_ir.c
+ * @brief Transmit received IR via UART
+ *
+ * Program which receives NEC IR commands and transmits
+ * them to host device via uart
+ *
+ * @author Jonathan Clapson jonathan.clapson@gmail.com
+ * @date 2014
+ * @copyright GNU GENERAL PUBLIC LICENSE version 2
+ */
+
 #include <stdint.h>
 
 #include "cstdlib/stdio.h"
