@@ -118,6 +118,15 @@ static const ROMPTR uint8_t mouse_report_descriptor[] = {
     0x95, 0x02,                    //     REPORT_COUNT (2)
     0x81, 0x06,                    //     INPUT (Data,Var,Rel)
     0xc0,                          //   END_COLLECTION
+    /* added */
+    0x05, 0x0c,                    //   USAGE_PAGE (Consumer Devices)
+    0x09, 0xe0,                    //   USAGE (Volume)
+    0x15, 0xff,                    //   LOGICAL_MINIMUM (-1)
+    0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
+    0x75, 0x02,                    //   REPORT_SIZE (2)
+    0x95, 0x02,                    //   REPORT_COUNT (1)
+    0x81, 0x46,                    //   INPUT (Data,Var,Rel,Null)
+    /* added */
     0xc0                           // END_COLLECTION
 };
 

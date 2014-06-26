@@ -155,9 +155,11 @@ int main(void)
 
 			unsigned char *buf = usb_get_in_buffer(1);
 			buf[0] = 0x0;
+			//--delay;
 			buf[1] = (--delay)? 0: x_direc;
-			buf[2] = 0;
-			usb_send_in_buffer(1, 3);
+			buf[2] = 0x0;
+			buf[3] = (delay)?0x0:0x1;
+			usb_send_in_buffer(1, 4);
 
 			if (delay == 0) {
 				if (--x_count == 0) {
