@@ -1,6 +1,5 @@
-*.asm
-*.o
-*.lst
-*.hex
-*.cod
 *~
+mainbin.*
+l.obj
+funclist
+obj/

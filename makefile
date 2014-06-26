@@ -1,66 +1,31 @@
-# Copyright (c) 2014 Jonathan Clapson
-#
-# The license and distribution terms for this file may
-# be found in the file LICENSE in this distribution.
+MPLAB_DIR := /opt/microchip/MPLABX
+XC8_DIR := /opt/microchip/xc8
+CHIP := 16F1454
+MSTACK := m-stack
+CC := xc8
 
-PIC=16f1454
-CFLAGS=--std-c99 --use-non-free -mpic14 -p$(PIC)
-INCDIR="./"
+C_FILES := $(wildcard src/*.c)
+OBJ_FILES := $(addprefix obj/,$(notdir $(C_FILES:.c=.p1)))
+OBJ_MSTACK := $(wildcard $(MSTACK)/obj/*.p1)
 
-UART=PIC_USE_HARD_UART
+LD_FLAGS := --chip=$(CHIP) -G --double=24 --float=24 --opt=default,-asm,-asmfile,-speed,+space,+debug --addrqual=ignore --mode=free -P -N255 --warn=0 --asmlist --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,+osccal,-resetbits,-download,-stackcall,+clib --output=-mcof,+elf:multilocs --stack=compiled:auto:auto
+CC_FLAGS := --pass1 --chip=$(CHIP) -Q -G --double=24 --float=24 --opt=default,-asm,-asmfile,-speed,+space,+debug --addrqual=ignore --mode=free -P -N255 --warn=0 --asmlist --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,+osccal,-resetbits,-download,-stackcall,+clib --output=-mcof,+elf:multilocs --stack=compiled:auto:auto
+INCL := -I./m-stack/include -I./src 
+DEFINE := 
+LIBS := 
+LIB_PATHS := 
 
-all: usb_test
+#link all object files
+mainbin: $(OBJ_FILES)
+	$(CC) $(LD_FLAGS) $(LIB_PATHS) -o$@ $(OBJ_FILES) $(OBJ_MSTACK) $(LIBS)
+#	xc8-bin2hex mainbin
 
-test: soft_uart_test hard_uart_test timer_test
-
-#fake c stdlib
-stdio:
-	sdcc $(CFLAGS) -I$(INCDIR) -DPIC_USE_HARD_UART -c cstdlib/stdio.c
-
-# support objects
-soft_uart_obj: timer_obj
-	sdcc $(CFLAGS) -I$(INCDIR) -DPIC_USE_SOFT_UART -c uart/soft_uart.c
+#compile all c files in source to object files
+obj/%.p1: src/%.c
+	$(CC) $(DEFINE)  $(CC_FLAGS) $(INCL) -c -o$@ $<
 	
-hard_uart_obj:
-	sdcc $(CFLAGS) -I$(INCDIR) -DPIC_USE_HARD_UART -c uart/hard_uart.c
-
-timer_obj:
-	sdcc $(CFLAGS) -I$(INCDIR) -c timer/timer.c
-
-# test binaries
-soft_uart_test: soft_uart_obj
-	sdcc $(CFLAGS) -I$(INCDIR) -DPIC_USE_SOFT_UART -c soft_uart_test.c
-	sdcc $(CFLAGS) -DPIC_USE_SOFT_UART soft_uart_test.o soft_uart.o timer.o
-
-hard_uart_test: hard_uart_obj
-	sdcc $(CFLAGS) -I$(INCDIR) -DPIC_USE_HARD_UART -c hard_uart_test.c
-	sdcc $(CFLAGS) -DPIC_USE_HARD_UART hard_uart_test.o hard_uart.o
-
-timer_test: timer_obj
-	sdcc $(CFLAGS) -I$(INCDIR) -c timer_test.c
-	sdcc $(CFLAGS) timer_test.o timer.o
-
-uart_ir: hard_uart_obj timer_obj stdio
-	sdcc $(CFLAGS) -I$(INCDIR) -DPIC_USE_HARD_UART -c uart_ir.c
-	sdcc $(CFLAGS) -DPIC_USE_HARD_UART uart_ir.o hard_uart.o timer.o stdio.o
-
-usb_test: hard_uart_obj timer_obj
-	sdcc $(CFLAGS) -I$(INCDIR) -DNO_BIT_DEFINES -DPIC_USE_HARD_UART -c usb_test.c
-	sdcc $(CFLAGS) -DNO_BIT_DEFINES -DPIC_USE_HARD_UART usb_test.o hard_uart.o timer.o
-
-program: usb_test
-	k14 lvp program usb_test.hex
-
-#to build multiple files, need to use sdcc -c which will build some sort of temporary intermediate
-# sdcc -c foo1.c
-# sdcc -c foo2.c
-# sdcc -c foomain.c
-# sdcc foomain.rel foo1.rel foo2.rel
-
 clean:
-	rm *.o
-	rm *.hex
-	rm *.asm
-	rm *.cod
-	rm *.lst
-#	rm soft_uart_test hard_uart_test timer_test
+	rm obj/*
+	rm mainbin.*
+	rm l.obj
+	rm funclist
