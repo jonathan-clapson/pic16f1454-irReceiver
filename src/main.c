@@ -153,22 +153,31 @@ int main(void)
 		    !usb_in_endpoint_halted(1) &&
 		    !usb_in_endpoint_busy(1)) {
 
-			unsigned char *buf = usb_get_in_buffer(1);
-			buf[0] = 0x0;
-			//--delay;
-			buf[1] = (--delay)? 0: x_direc;
-			buf[2] = 0x0;
-			buf[3] = (delay)?0x0:0x1;
-			usb_send_in_buffer(1, 4);
+//			unsigned char *buf = usb_get_in_buffer(1);
+			struct remote_buf_t* remote_buf = usb_get_in_buffer(1);
+			unsigned char *buf = (unsigned char *) remote_buf;
+			memset(remote_buf, 0, 5);
+			/* buf[0-2] = mouse */
+			/* buf[3] = keypad and volume/chan control */
+			/* buf[4] = mute/etc, buttons */
+			
+			buf[2] = (--delay)? 0: x_direc;
 
 			if (delay == 0) {
 				if (--x_count == 0) {
 					x_count = 100;
 					x_direc *= -1;
+					/* volume up/down */
+					//buf[3] = (x_direc==1)?(1<<2):(3<<2);
+					/* mute toggle */
+					//buf[3] = 0x04;
+					buf[4] = 1;
 				}
 				delay = 7;
 			}
-		}
+			
+			usb_send_in_buffer(1, 5);
+		}		
 
 		#ifndef USB_USE_INTERRUPTS
 		usb_service();

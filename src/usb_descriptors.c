@@ -93,41 +93,82 @@ const ROMPTR struct device_descriptor this_device_descriptor =
  * is the mouse example from the "HID Descriptor Tool" which can be downloaded
  * from USB.org. */
 static const ROMPTR uint8_t mouse_report_descriptor[] = {
-   0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
-    0x09, 0x02,                    // USAGE (Mouse)
-    0xa1, 0x01,                    // COLLECTION (Application)
-    0x09, 0x01,                    //   USAGE (Pointer)
-    0xa1, 0x00,                    //   COLLECTION (Physical)
-    0x05, 0x09,                    //     USAGE_PAGE (Button)
-    0x19, 0x01,                    //     USAGE_MINIMUM (Button 1)
-    0x29, 0x03,                    //     USAGE_MAXIMUM (Button 3)
-    0x15, 0x00,                    //     LOGICAL_MINIMUM (0)
-    0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
-    0x95, 0x03,                    //     REPORT_COUNT (3)
-    0x75, 0x01,                    //     REPORT_SIZE (1)
-    0x81, 0x02,                    //     INPUT (Data,Var,Abs)
-    0x95, 0x01,                    //     REPORT_COUNT (1)
-    0x75, 0x05,                    //     REPORT_SIZE (5)
-    0x81, 0x03,                    //     INPUT (Cnst,Var,Abs)
-    0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
-    0x09, 0x30,                    //     USAGE (X)
-    0x09, 0x31,                    //     USAGE (Y)
-    0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
-    0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
-    0x75, 0x08,                    //     REPORT_SIZE (8)
-    0x95, 0x02,                    //     REPORT_COUNT (2)
-    0x81, 0x06,                    //     INPUT (Data,Var,Rel)
-    0xc0,                          //   END_COLLECTION
-    /* added */
-    0x05, 0x0c,                    //   USAGE_PAGE (Consumer Devices)
-    0x09, 0xe0,                    //   USAGE (Volume)
-    0x15, 0xff,                    //   LOGICAL_MINIMUM (-1)
-    0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
-    0x75, 0x02,                    //   REPORT_SIZE (2)
-    0x95, 0x02,                    //   REPORT_COUNT (1)
-    0x81, 0x46,                    //   INPUT (Data,Var,Rel,Null)
-    /* added */
-    0xc0                           // END_COLLECTION
+	0x05, 0x0c,                    // USAGE_PAGE (Consumer Devices)
+	/* bytes 0-2 */
+	0x09, 0x02,                    // USAGE (Mouse)
+	0xa1, 0x01,                    // COLLECTION (Application)
+	0x09, 0x01,                    //   USAGE (Pointer)
+	0xa1, 0x00,                    //   COLLECTION (Physical)
+	0x05, 0x09,                    //     USAGE_PAGE (Button)
+	0x19, 0x01,                    //     USAGE_MINIMUM (Button 1)
+	0x29, 0x03,                    //     USAGE_MAXIMUM (Button 3)
+	0x15, 0x00,                    //     LOGICAL_MINIMUM (0)
+	0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
+	0x95, 0x03,                    //     REPORT_COUNT (3)
+	0x75, 0x01,                    //     REPORT_SIZE (1)
+	0x81, 0x02,                    //     INPUT (Data,Var,Abs)
+	0x95, 0x01,                    //     REPORT_COUNT (1)
+	0x75, 0x05,                    //     REPORT_SIZE (5)
+	0x81, 0x03,                    //     INPUT (Cnst,Var,Abs)
+	0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
+	0x09, 0x30,                    //     USAGE (X)
+	0x09, 0x31,                    //     USAGE (Y)
+	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
+	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
+	0x75, 0x08,                    //     REPORT_SIZE (8)
+	0x95, 0x02,                    //     REPORT_COUNT (2)
+	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
+	0xc0,                          //   END_COLLECTION
+	/* keypad (numbers) byte3:bits0-3 */
+	0x09, 0x02,                    //   USAGE (Numeric Key Pad)
+	0xa1, 0x02,                    //   COLLECTION (Logical)
+	0x05, 0x09,                    //     USAGE_PAGE (Button)
+	0x19, 0x01,                    //     USAGE_MINIMUM (Button 1)
+	0x29, 0x0a,                    //     USAGE_MAXIMUM (Button 10)
+	0x15, 0x01,                    //     LOGICAL_MINIMUM (1)
+	0x25, 0x0a,                    //     LOGICAL_MAXIMUM (10)
+	0x75, 0x04,                    //     REPORT_SIZE (4)
+	0x95, 0x01,                    //     REPORT_COUNT (1)
+	0x81, 0x00,                    //     INPUT (Data,Ary,Abs)
+	0xc0,                          //   END_COLLECTION
+	/* added, volume - channel byte3:bits4-7 */
+	0x05, 0x0c,                    //   USAGE_PAGE (Consumer Devices)
+	0x09, 0x86,                    //   USAGE (Channel)
+	0x09, 0xe0,                    //   USAGE (Volume)
+	0x15, 0xff,                    //   LOGICAL_MINIMUM (-1)
+	0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
+	0x75, 0x02,                    //   REPORT_SIZE (2)
+	0x95, 0x02,                    //   REPORT_COUNT (2)
+	0x81, 0x46,                    //   INPUT (Data,Var,Rel,Null)	
+	/* added - controls byte4:bits0-4*/
+	0x09, 0xe2,                    //   USAGE (Mute) - MUTE
+	0x09, 0x30,                    //   USAGE (Power) - POWER
+	0x09, 0x83,                    //   USAGE (Recall Last) - RECALL
+	0x09, 0x60,                    //   USAGE (Data On Screen) - OSD
+	0x09, 0xA0,                    //   USAGE (VCR Plus) - PLUS
+	0x09, 0x82,                    //   USAGE (Mode Step) - MODE
+	0x09, 0x84,                    //   USAGE (Enter Channel) - OK
+	0x09, 0x63,                    //   USAGE (VCR/TV) - SOURCE
+	0x09, 0xB0,                    //   USAGE (Play) - Play
+	0x09, 0xB1,                    //   USAGE (Pause) - Pause
+	0x09, 0xB2,                    //   USAGE (Record) - Record
+	0x09, 0xB5,                    //   USAGE (Scan Next Track) - NEXT
+	0x09, 0xB6,                    //   USAGE (Scan Previous Track) - PREV
+	0x09, 0xB7,                    //   USAGE (Stop) - Stop
+	0x09, 0x65,                    //   USAGE (Snapshot) - Snapshot
+	0x09, 0xB9,                    //   USAGE (Random Play) - Timeshift
+	0x09, 0x93,                    //   USAGE (Media Select Tuner) - Radio
+	0x09, 0x91,                    //   USAGE (Media Select CD) - Stereo
+	0x15, 0x01,                    //   LOGICAL_MINIMUM (1)
+	0x25, 0x08,                    //   LOGICAL_MAXIMUM (18)
+	0x75, 0x05,                    //   REPORT_SIZE (5)
+	0x95, 0x01,                    //   REPORT_COUNT (1)
+	0x81, 0x00,                    //   INPUT (Data,Ary,Abs)
+	/* added, fill byte4:bits5-7 */		
+	0x95, 0x01,                    //     REPORT_COUNT (1)
+	0x75, 0x03,                    //     REPORT_SIZE (3)
+	0x81, 0x03,                    //     INPUT (Cnst,Var,Abs)
+	0xc0                           // END_COLLECTION
 };
 
 /* Configuration Packet Instance
