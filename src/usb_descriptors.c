@@ -97,16 +97,6 @@ static const ROMPTR uint8_t mouse_report_descriptor[] = {
 	/* bytes 0-2 */
 	0x09, 0x01,                    // USAGE (Consumer Control)
 	0xa1, 0x01,                    // COLLECTION (Application)
-	0x09, 0x01,                    //   USAGE (Pointer)
-	0xa1, 0x00,                    //   COLLECTION (Physical)
-	0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
-	0x09, 0x30,                    //     USAGE (X)
-	0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
-	0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
-	0x75, 0x08,                    //     REPORT_SIZE (8)
-	0x95, 0x01,                    //     REPORT_COUNT (1)
-	0x81, 0x06,                    //     INPUT (Data,Var,Rel)
-	0xc0,                          //   END_COLLECTION
 	/* keypad (numbers) byte3:bits0-3 */
 	0x09, 0x02,                    //   USAGE (Numeric Key Pad)
 	0xa1, 0x02,                    //   COLLECTION (Logical)

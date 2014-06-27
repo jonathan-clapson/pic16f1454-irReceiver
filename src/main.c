@@ -156,12 +156,12 @@ int main(void)
 //			unsigned char *buf = usb_get_in_buffer(1);
 			struct remote_buf_t* remote_buf = usb_get_in_buffer(1);
 			unsigned char *buf = (unsigned char *) remote_buf;
-			memset(remote_buf, 0, 3);
+			memset(remote_buf, 0, 2);
 			/* buf[0-2] = mouse */
 			/* buf[3] = keypad and volume/chan control */
 			/* buf[4] = mute/etc, buttons */
-			
-			buf[0] = (--delay)? 0: x_direc;
+			--delay;
+			//buf[0] = (--delay)? 0: x_direc;
 
 			if (delay == 0) {
 				if (--x_count == 0) {
@@ -171,12 +171,12 @@ int main(void)
 					//buf[3] = (x_direc==1)?(1<<2):(3<<2);
 					/* mute toggle */
 					//buf[3] = 0x04;
-					buf[2] = 1;
+					buf[1] = 1;
 				}
 				delay = 7;
 			}
 			
-			usb_send_in_buffer(1, 3);
+			usb_send_in_buffer(1, 2);
 		}		
 
 		#ifndef USB_USE_INTERRUPTS
