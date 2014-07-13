@@ -10,7 +10,7 @@
  */
 
 #include <stdint.h>
-#include "pic14/pic16f1454.h"
+#include <xc.h>
 
 void hard_uart_tx_init()
 {
