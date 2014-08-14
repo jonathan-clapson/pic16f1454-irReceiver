@@ -3,6 +3,9 @@
  * @brief USB Test
  *
  * Working on USB functionality
+ * This probably isn't working correctly due to CONFIG2 settings
+ * USB requires 48MHz clock, HFINTOSC should be used with PLL 3x
+ * see TABLE 5-2: HIGH-SPEED USB CLOCK SETTINGS in datasheet
  *
  * @author Jonathan Clapson jonathan.clapson@gmail.com
  * @date 2014
