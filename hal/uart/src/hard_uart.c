@@ -42,7 +42,6 @@ void hard_uart_rx_init()
 
 void hard_uart_baud_init()
 {
-	
 	BRG16 = 0;
 /*
 	//set baud rate to 9600Hz
@@ -55,8 +54,12 @@ void hard_uart_baud_init()
 	//set asynchronous mode
 	SYNC = 0;
 
-	BRGH = 1;
+/*	BRGH = 1;
 	SPBRGL = 16;
+	SPBRGH = 0;*/
+	
+	BRGH = 0;
+	SPBRGL = 12;
 	SPBRGH = 0;
 }
 

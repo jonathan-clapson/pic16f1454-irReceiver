@@ -14,7 +14,7 @@
 #define __PIC_UART_H__
 
 #ifdef PIC_USE_HARD_UART
-#include "uart/hard_uart.h"
+#include "hard_uart.h"
 #define uart_init() 	hard_uart_init()
 
 #define uart_getc_nb(X) 	hard_uart_getc_nb()

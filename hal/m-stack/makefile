@@ -2,19 +2,17 @@ MPLAB_DIR := /opt/microchip/MPLABX
 XC8_DIR := /opt/microchip/xc8
 
 CHIP := 16F1454
-#the folder that contains usb_config.h
-CONFIGPATH := ../src/
 
 CC := xc8
 C_FILES := $(wildcard src/*.c)
 OBJ_FILES := $(addprefix obj/,$(notdir $(C_FILES:.c=.p1)))
 LD_FLAGS := 
 CC_FLAGS := --pass1 --chip=$(CHIP) -Q -G --double=24 --float=24 --opt=default,-asm,-asmfile,-speed,+space,+debug --addrqual=ignore --mode=free -P -N255 --warn=0 --asmlist --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,+osccal,-resetbits,-download,-stackcall,+clib --output=-mcof,+elf:multilocs --stack=compiled:auto:auto
-INCL := -I./include -I./src -I$(CONFIGPATH)
+INCL := -I./include -I./src
 LIBS := -ldsp-elf
 LIB_PATHS := -Lmicrochip/lib
 
-#link all object files
+#create library
 objects: $(OBJ_FILES)
 
 #compile all c files in source to object files
