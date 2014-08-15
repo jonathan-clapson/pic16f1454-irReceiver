@@ -23,26 +23,7 @@
 #define PIC_USE_HARD_UART
 #include "uart.h"
 
-#if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)
-#pragma config FOSC = INTOSC
-#pragma config WDTE = OFF
-#pragma config PWRTE = OFF
-#pragma config MCLRE = ON
-#pragma config CP = OFF
-#pragma config BOREN = ON
-#pragma config CLKOUTEN = OFF
-#pragma config IESO = OFF
-#pragma config FCMEN = OFF
-#pragma config WRT = OFF
-#pragma config CPUDIV = NOCLKDIV
-#pragma config USBLSCLK = 48MHz
-#pragma config PLLMULT = 3x
-#pragma config PLLEN = ENABLED
-#pragma config STVREN = ON
-#pragma config BORV = LO
-#pragma config LPBOR = ON
-#pragma config LVP = ON
-#endif
+#include <system.h>
 
 #ifdef MULTI_CLASS_DEVICE
 static uint8_t hid_interfaces[] = { 0 };
@@ -50,14 +31,14 @@ static uint8_t hid_interfaces[] = { 0 };
 
 int main(void)
 {
-#if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)
-	OSCCONbits.IRCF = 0b1111; /* 0b1111 = 16MHz HFINTOSC postscalar */
 
+	system_init();
+
+#if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)	
 	/* Enable Active clock-tuning from the USB */
 	ACTCONbits.ACTSRC = 1; /* 1=USB */
 	ACTCONbits.ACTEN = 1;
 #endif
-
 
 /* Configure interrupts, per architecture */
 #ifdef USB_USE_INTERRUPTS
