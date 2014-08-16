@@ -13,8 +13,11 @@
 #ifndef __PIC_UART_H__
 #define __PIC_UART_H__
 
+//if using software uart don't define this
+#define PIC_USE_HARD_UART
+
 #ifdef PIC_USE_HARD_UART
-#include "hard_uart.h"
+#include <hard_uart.h>
 #define uart_init() 	hard_uart_init()
 
 #define uart_getc_nb(X) 	hard_uart_getc_nb()
@@ -28,7 +31,8 @@
 #define uart_puts_bl(X)		hard_uart_puts_bl(X)
 #define uart_puts(X)		hard_uart_puts_bl(X)
 #else
-#include "uart/soft_uart.h"
+#error Software uart currently not functional
+#include <soft_uart.h>
 #define uart_init() 		soft_uart_init()
 
 #define uart_getc_nb(X)		/* printf() */ soft_uart_getc_bl() /* print a message saying it can't be done */

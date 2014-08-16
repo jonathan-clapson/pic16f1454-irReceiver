@@ -16,7 +16,7 @@ OBJ_HAL := $(wildcard hal/obj/*.p1)
 LD_FLAGS := --chip=$(CHIP) -G --double=24 --float=24 --opt=default,-asm,-asmfile,-speed,+space,+debug --addrqual=ignore --mode=free -P -N255 --warn=0 --asmlist --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,+osccal,-resetbits,-download,-stackcall,+clib --output=-mcof,+elf:multilocs --stack=compiled:auto:auto
 CC_FLAGS := --pass1 --chip=$(CHIP) -Q -G --double=24 --float=24 --opt=default,-asm,-asmfile,-speed,+space,+debug --addrqual=ignore --mode=free -P -N255 --warn=0 --asmlist --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,+osccal,-resetbits,-download,-stackcall,+clib --output=-mcof,+elf:multilocs --stack=compiled:auto:auto
 INCL := -Ihal/include -Ihal/m-stack/include -Isrc 
-DEFINE := 
+DEFINES := 
 LIBS := 
 LIB_PATHS := 
 
@@ -33,7 +33,7 @@ picir: hal_dirs $(OBJ_FILES)
 
 #compile all c files in source to object files
 obj/%.p1: src/%.c
-	$(CC) $(DEFINE)  $(CC_FLAGS) $(INCL) -c -o$@ $<
+	$(CC) $(DEFINE)  $(CC_FLAGS) $(INCL) $(DEFINES) -c -o$@ $<
 	
 hal_dirs:
 	for dir in $(HAL_DIRS); do \
