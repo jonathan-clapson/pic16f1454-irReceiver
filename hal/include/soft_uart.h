@@ -13,10 +13,8 @@
 #ifndef __PIC_SOFT_UART_H__
 #define __PIC_SOFT_UART_H__
 
+#include <xc.h>
 #include <stdint.h>
-#include "pic14/pic16f1454.h"
-
-#include "timer/timer.h"
 
 #define Baudrate	1	//bps
 //#define OneBitDelay	(1000000/Baudrate)
