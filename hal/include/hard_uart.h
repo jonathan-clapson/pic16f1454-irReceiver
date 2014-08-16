@@ -14,13 +14,13 @@
 
 #include <stdint.h>
 
-int hard_uart_putc_nb(uint8_t data);
-int hard_uart_putc_bl(uint8_t data);
+int8_t hard_uart_putc_nb(uint8_t data);
+int8_t hard_uart_putc_bl(uint8_t data);
 
-int hard_uart_getc_bl(uint8_t *data);
-int hard_uart_getc_nb(uint8_t *data);
+int8_t hard_uart_getc_bl(uint8_t *data);
+int8_t hard_uart_getc_nb(uint8_t *data);
 
-int hard_uart_puts_bl(uint8_t *data);
+int8_t hard_uart_puts_bl(uint8_t *data);
 
 void hard_uart_init();
 
