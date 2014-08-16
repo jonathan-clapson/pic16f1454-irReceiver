@@ -70,7 +70,7 @@ void hard_uart_init()
 	hard_uart_rx_init();
 }
 
-int hard_uart_putc_nb(uint8_t data)
+int8_t hard_uart_putc_nb(uint8_t data)
 {
 	/* if TRMT bit is clear then transmit */
 	if (TRMT) {
@@ -80,26 +80,26 @@ int hard_uart_putc_nb(uint8_t data)
 	return -1;	
 }
 
-int hard_uart_putc_bl(uint8_t data)
+int8_t hard_uart_putc_bl(uint8_t data)
 {
 	while (!TRMT);
 	TXREG = data;
 	return 0;
 }
 
-int hard_uart_getc_bl(uint8_t *data)
+int8_t hard_uart_getc_bl(uint8_t *data)
 {
 	*data = 0;
 	return -1;
 }
 
-int hard_uart_getc_nb(uint8_t *data)
+int8_t hard_uart_getc_nb(uint8_t *data)
 {
 	*data = 0;
 	return -1;
 }
 
-int hard_uart_puts_bl(uint8_t *data)
+int8_t hard_uart_puts_bl(uint8_t *data)
 {
 	while (*data) {
 		hard_uart_putc_bl(*data);
