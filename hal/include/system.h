@@ -1,7 +1,9 @@
 #ifndef __SYSTEM_H__
 #define __SYSTEM_H__
 
+// these two are the value in Hz and Mhz, should be the same
 #define SYS_FREQ 48000000
+#define SYS_FREQ_MHz 48
 
 #if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)
 #pragma config FOSC = INTOSC
