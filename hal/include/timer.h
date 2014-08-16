@@ -1,28 +1,17 @@
-/**
- * @file timer.h
- * @brief HAL for hardware timers
- *
- * Provides functions to control hardware timers
- *
- * @author Jonathan Clapson jonathan.clapson@gmail.com
- * @date 2014
- * @copyright GNU GENERAL PUBLIC LICENSE version 2
- */
+#ifndef __TIMER_H__
+#define __TIMER_H__
 
-#ifndef __PIC_TIMER_H__
-#define __PIC_TIMER_H__
+#include <stdint.h>
 
-typedef union timer_time {
-	uint8_t byte[2];
-	uint16_t word;
+struct timer_t {
+	uint16_t ms;
+	uint16_t us;
 };
 
-void clock_init();
-void timer1_init_1us();
-void timer0_init_1us();
-uint8_t timer0_get_time();
-uint16_t timer1_get_time();
-void usleep(uint8_t num);
-void t1_usleep(uint8_t num);
+#define TIMER_GREATER_THAN 1
+#define TIMER_LESS_THAN -1
+#define TIMER_EQUAL 0
 
-#endif /* __PIC_TIMER_H__ */
+int8_t timer_compare(struct timer_t *t1, struct timer_t *t2);
+
+#endif /* __TIMER_H__ */

@@ -15,15 +15,19 @@
 #include "usb.h"
 #include <xc.h>
 #include <string.h>
+#include <stdint.h>
 #include "usb_config.h"
 #include "usb_ch9.h"
 #include "usb_hid.h"
 
-/* use hardware uart implementation */
-#define PIC_USE_HARD_UART
-#include "uart.h"
+#include <stdio.h>
 
 #include <system.h>
+#include <timer.h>
+#include <systimer.h>
+#include <uart.h>
+#include <irq.h>
+
 
 #ifdef MULTI_CLASS_DEVICE
 static uint8_t hid_interfaces[] = { 0 };
@@ -31,10 +35,24 @@ static uint8_t hid_interfaces[] = { 0 };
 
 int main(void)
 {
-
+	uint8_t i;
 	system_init();
+	uart_init();
 
-#if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)	
+	TRISC2 = 0;
+
+	// give clock/uart time to stabilise
+	for (i=0; i<255; i++) {
+	}
+
+	// build interrupt table
+	irq_init();
+	irq_register_handler(IRQ_USB, usb_service);
+	irq_register_handler(IRQ_TIMER0, systimer_interrupt);
+
+	systimer_init();
+
+#if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)
 	/* Enable Active clock-tuning from the USB */
 	ACTCONbits.ACTSRC = 1; /* 1=USB */
 	ACTCONbits.ACTEN = 1;
@@ -45,15 +63,14 @@ int main(void)
 	#if defined (_PIC18) || defined(_PIC14E)
 		INTCONbits.PEIE = 1;
 		INTCONbits.GIE = 1;
-	#endif	
+	#endif
 #endif
 
 #ifdef MULTI_CLASS_DEVICE
 	hid_set_interface_list(hid_interfaces, sizeof(hid_interfaces));
 #endif
+
 	usb_init();
-	
-	uart_init();
 
 	/* Setup mouse movement. This implementation sends back data for every
 	 * IN packet, but sends no movement for all but every delay-th frame.
@@ -71,22 +88,37 @@ int main(void)
 	uint8_t x_count = 100;
 	uint8_t delay = 7;
 	int8_t x_direc = 1;
-	
+
 	char rc_val = 0;
-	// init LED
-	TRISC2 = 0;
-	RC2 = rc_val;
-	
-	while (1) {		
-		
+
+	struct timer_t systimer_next;
+	struct timer_t systimer_cur;
+	memset(&systimer_next, 0, sizeof(struct timer_t));
+
+	char buf[20];
+
+	while (1) {
+
+		/*sprintf(buf, "n %u %u\r\n", systimer_next.ms, systimer_next.us);
+		uart_puts(buf);*/
+		systimer_get_time(&systimer_cur);
+		/*uart_puts("c");
+		uart_putc((systimer_cur.ms%10)+'0');
+		uart_puts("\r\n");*/
+		//sprintf(buf, "c %u %u\r\n", systimer_cur.ms, systimer_cur.us);
+		//uart_puts(buf);
+		if (timer_compare(&systimer_cur, &systimer_next) == TIMER_GREATER_THAN) {
+			systimer_next.us = systimer_cur.us;
+			systimer_next.ms = systimer_cur.ms + 1000;
+			rc_val = rc_val?0:1;
+			RC2=rc_val;
+		}
+
 		/* NOTE: Code in here will not run until USB is plugged in! */
 		if (usb_is_configured() &&
 		    !usb_in_endpoint_halted(1) &&
 		    !usb_in_endpoint_busy(1)) {
-		    	uart_putc('a');
-		    	rc_val = rc_val?0:1;
-			RC2 = rc_val;
-	
+
 //			unsigned char *buf = usb_get_in_buffer(1);
 			struct remote_buf_t* remote_buf = usb_get_in_buffer(1);
 			unsigned char *buf = (unsigned char *) remote_buf;
@@ -109,9 +141,9 @@ int main(void)
 				}
 				delay = 7;
 			}
-			
+
 			usb_send_in_buffer(1, 2);
-		}		
+		}
 
 		#ifndef USB_USE_INTERRUPTS
 		usb_service();
@@ -245,22 +277,3 @@ int8_t app_set_protocol_callback(uint8_t interface, uint8_t report_id)
 {
 	return -1;
 }
-
-
-#ifdef _PIC14E
-void interrupt isr()
-{
-	usb_service();
-}
-#elif _PIC18
-
-#ifdef __XC8
-void interrupt high_priority isr()
-{
-	usb_service();
-}
-#elif _PICC18
-#error need to make ISR
-#endif
-
-#endif
