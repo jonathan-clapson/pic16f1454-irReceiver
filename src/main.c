@@ -20,6 +20,7 @@
 #include "usb_ch9.h"
 #include "usb_hid.h"
 
+#include <poor_stdio.h>
 #include <stdio.h>
 
 #include <system.h>
@@ -27,6 +28,18 @@
 #include <systimer.h>
 #include <uart.h>
 #include <irq.h>
+
+void uart_dump_uint16_t(uint16_t val)
+{
+	char uart_buf[6];
+	uart_buf[4] = (val/1)%10 +'0';
+	uart_buf[3] = (val/10)%10 +'0';
+	uart_buf[2] = (val/100)%10 +'0';
+	uart_buf[1] = (val/1000)%10 +'0';
+	uart_buf[0] = (val/10000)%10 +'0';
+	uart_buf[5] = '\0';
+	uart_puts(uart_buf);
+}
 
 
 #ifdef MULTI_CLASS_DEVICE
@@ -95,18 +108,23 @@ int main(void)
 	struct timer_t systimer_cur;
 	memset(&systimer_next, 0, sizeof(struct timer_t));
 
-	char buf[20];
-
 	while (1) {
+		uart_putc('n');
+		uart_dump_uint16_t(systimer_next.ms);
+		uart_putc(' ');
+		uart_dump_uint16_t(systimer_next.us);
+		uart_putc('\r');
+		uart_putc('\n');
 
-		/*sprintf(buf, "n %u %u\r\n", systimer_next.ms, systimer_next.us);
-		uart_puts(buf);*/
 		systimer_get_time(&systimer_cur);
-		/*uart_puts("c");
-		uart_putc((systimer_cur.ms%10)+'0');
-		uart_puts("\r\n");*/
-		//sprintf(buf, "c %u %u\r\n", systimer_cur.ms, systimer_cur.us);
-		//uart_puts(buf);
+
+		uart_putc('c');
+		uart_dump_uint16_t(systimer_cur.ms);
+		uart_putc(' ');
+		uart_dump_uint16_t(systimer_cur.us);
+		uart_putc('\r');
+		uart_putc('\n');
+
 		if (timer_compare(&systimer_cur, &systimer_next) == TIMER_GREATER_THAN) {
 			systimer_next.us = systimer_cur.us;
 			systimer_next.ms = systimer_cur.ms + 1000;
@@ -114,28 +132,28 @@ int main(void)
 			RC2=rc_val;
 		}
 
-		/* NOTE: Code in here will not run until USB is plugged in! */
+		// NOTE: Code in here will not run until USB is plugged in!
 		if (usb_is_configured() &&
 		    !usb_in_endpoint_halted(1) &&
 		    !usb_in_endpoint_busy(1)) {
 
 //			unsigned char *buf = usb_get_in_buffer(1);
-			struct remote_buf_t* remote_buf = usb_get_in_buffer(1);
+			struct remote_buf_t* remote_buf = (struct remote_buf_t*) usb_get_in_buffer(1);
 			unsigned char *buf = (unsigned char *) remote_buf;
 			memset(remote_buf, 0, 2);
-			/* buf[0-2] = mouse */
-			/* buf[3] = keypad and volume/chan control */
-			/* buf[4] = mute/etc, buttons */
+			// buf[0-2] = mouse
+			// buf[3] = keypad and volume/chan control
+			// buf[4] = mute/etc, buttons
 			--delay;
 			//buf[0] = (--delay)? 0: x_direc;
 
-			if (delay == 0) {
+			if (delay <= 0) {
 				if (--x_count == 0) {
 					x_count = 100;
-					x_direc *= -1;
-					/* volume up/down */
+					//x_direc *= -1;
+					// volume up/down
 					//buf[3] = (x_direc==1)?(1<<2):(3<<2);
-					/* mute toggle */
+					// mute toggle
 					//buf[3] = 0x04;
 					buf[1] = 1;
 				}
@@ -146,6 +164,7 @@ int main(void)
 		}
 
 		#ifndef USB_USE_INTERRUPTS
+		//uart_puts("here");
 		usb_service();
 		#endif
 	}
