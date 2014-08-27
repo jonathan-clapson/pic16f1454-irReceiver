@@ -74,9 +74,6 @@ void systimer_interrupt()
 
 int8_t systimer_get_time(struct timer_t *sys_timer)
 {
-	//calculate the multiplier one time only
-	const static uint8_t mult = (32*4)/SYS_FREQ_MHz;
-
 	if (!TMR0IE)
 		return SYSTIMER_ERR_DISABLED;
 
@@ -84,12 +81,9 @@ int8_t systimer_get_time(struct timer_t *sys_timer)
 	//FIXME: if this gets interrupted during copy data will go bad :S
 	memcpy(sys_timer, &interrupt_system_timer, sizeof(struct timer_t));
 
-	//update the system timer buffer
-	sys_timer->us += TMR0*mult;
-	if (sys_timer->us > 1000) {
-		sys_timer->us -= 1000;
-		sys_timer->ms ++;
-	}
+	// tried to resolve the amount of micros that have pass since overflow
+	// but xc8 compiler can't produce the code necessary to do it with fixed point math
+	// and 24bit float seems to not have enough resolution because I get wrong answers?
 
 	return SYSTIMER_ERR_SUCCESS;
 }

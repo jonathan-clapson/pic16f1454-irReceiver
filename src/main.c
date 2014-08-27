@@ -53,6 +53,8 @@ int main(void)
 	uart_init();
 
 	TRISC2 = 0;
+	TRISC3 = 0;
+	TRISA4 = 0;
 
 	// give clock/uart time to stabilise
 	for (i=0; i<255; i++) {
@@ -63,20 +65,21 @@ int main(void)
 	irq_register_handler(IRQ_USB, usb_service);
 	irq_register_handler(IRQ_TIMER0, systimer_interrupt);
 
-	systimer_init();
-
-#if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)
-	/* Enable Active clock-tuning from the USB */
-	ACTCONbits.ACTSRC = 1; /* 1=USB */
+	#if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)
+	// Enable Active clock-tuning from the USB
+	ACTCONbits.ACTSRC = 1; // 1=USB
 	ACTCONbits.ACTEN = 1;
 #endif
 
-/* Configure interrupts, per architecture */
-#ifdef USB_USE_INTERRUPTS
-	#if defined (_PIC18) || defined(_PIC14E)
-		INTCONbits.PEIE = 1;
-		INTCONbits.GIE = 1;
-	#endif
+	//Interrupts were doing weird things until I set this. No idea why :S
+	INTCON = 0x00;
+
+	systimer_init();
+
+// Configure interrupts, per architecture
+#if defined (_PIC18) || defined(_PIC14E)
+	INTCONbits.PEIE = 1;
+	INTCONbits.GIE = 1;
 #endif
 
 #ifdef MULTI_CLASS_DEVICE
@@ -84,6 +87,10 @@ int main(void)
 #endif
 
 	usb_init();
+
+	// give everything time to chill
+	for (i=0; i<255; i++) {
+	}
 
 	/* Setup mouse movement. This implementation sends back data for every
 	 * IN packet, but sends no movement for all but every delay-th frame.
@@ -102,34 +109,20 @@ int main(void)
 	uint8_t delay = 7;
 	int8_t x_direc = 1;
 
-	char rc_val = 0;
+	char rc2_val = 0;
 
 	struct timer_t systimer_next;
 	struct timer_t systimer_cur;
 	memset(&systimer_next, 0, sizeof(struct timer_t));
 
 	while (1) {
-		uart_putc('n');
-		uart_dump_uint16_t(systimer_next.ms);
-		uart_putc(' ');
-		uart_dump_uint16_t(systimer_next.us);
-		uart_putc('\r');
-		uart_putc('\n');
-
 		systimer_get_time(&systimer_cur);
 
-		uart_putc('c');
-		uart_dump_uint16_t(systimer_cur.ms);
-		uart_putc(' ');
-		uart_dump_uint16_t(systimer_cur.us);
-		uart_putc('\r');
-		uart_putc('\n');
-
 		if (timer_compare(&systimer_cur, &systimer_next) == TIMER_GREATER_THAN) {
-			systimer_next.us = systimer_cur.us;
-			systimer_next.ms = systimer_cur.ms + 1000;
-			rc_val = rc_val?0:1;
-			RC2=rc_val;
+rc2_val = rc2_val?0:1;
+		RC2=rc2_val;
+			systimer_next.us = systimer_next.us;
+			systimer_next.ms = systimer_next.ms + 1000;
 		}
 
 		// NOTE: Code in here will not run until USB is plugged in!
@@ -164,7 +157,6 @@ int main(void)
 		}
 
 		#ifndef USB_USE_INTERRUPTS
-		//uart_puts("here");
 		usb_service();
 		#endif
 	}
