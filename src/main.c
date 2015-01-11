@@ -20,14 +20,14 @@
 #include "usb_ch9.h"
 #include "usb_hid.h"
 
-#include <poor_stdio.h>
 #include <stdio.h>
 
 #include <system.h>
-#include <timer.h>
-#include <systimer.h>
 #include <uart.h>
 #include <irq.h>
+
+#include "ir.h"
+#include "timer.h"
 
 void uart_dump_uint16_t(uint16_t val)
 {
@@ -46,11 +46,22 @@ void uart_dump_uint16_t(uint16_t val)
 static uint8_t hid_interfaces[] = { 0 };
 #endif
 
+void print_uint8_t (uint8_t dVal)
+{
+	char buffer[10];
+	uint16_t data = (uint16_t) dVal;
+	uart_dump_uint16_t (data);
+}
+
 int main(void)
 {
 	uint8_t i;
 	system_init();
 	uart_init();
+
+	// set Pin A5 to input mode and then read it to update Interrupt on Change latch
+	TRISA5 = 1;
+	//volatile uint8_t ra5 = RA5;
 
 	TRISC2 = 0;
 	TRISC3 = 0;
@@ -63,9 +74,9 @@ int main(void)
 	// build interrupt table
 	irq_init();
 	irq_register_handler(IRQ_USB, usb_service);
-	irq_register_handler(IRQ_TIMER0, systimer_interrupt);
+	irq_register_handler(IRQ_INT_ON_CHANGE, ir_isr);
 
-	#if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)
+#if defined(_16F1454) || defined(_16F1455) || defined(_16F1459)
 	// Enable Active clock-tuning from the USB
 	ACTCONbits.ACTSRC = 1; // 1=USB
 	ACTCONbits.ACTEN = 1;
@@ -74,10 +85,12 @@ int main(void)
 	//Interrupts were doing weird things until I set this. No idea why :S
 	INTCON = 0x00;
 
-	systimer_init();
+	timer_init();
+	ir_init();
 
 // Configure interrupts, per architecture
 #if defined (_PIC18) || defined(_PIC14E)
+	INTCONbits.IOCIE = 1;
 	INTCONbits.PEIE = 1;
 	INTCONbits.GIE = 1;
 #endif
@@ -109,26 +122,42 @@ int main(void)
 	uint8_t delay = 7;
 	int8_t x_direc = 1;
 
-	char rc2_val = 0;
-
-	struct timer_t systimer_next;
-	struct timer_t systimer_cur;
-	memset(&systimer_next, 0, sizeof(struct timer_t));
-
 	while (1) {
-		systimer_get_time(&systimer_cur);
-
-		if (timer_compare(&systimer_cur, &systimer_next) == TIMER_GREATER_THAN) {
-rc2_val = rc2_val?0:1;
-		RC2=rc2_val;
-			systimer_next.us = systimer_next.us;
-			systimer_next.ms = systimer_next.ms + 1000;
-		}
-
 		// NOTE: Code in here will not run until USB is plugged in!
 		if (usb_is_configured() &&
 		    !usb_in_endpoint_halted(1) &&
 		    !usb_in_endpoint_busy(1)) {
+
+			/*if (flag) {
+				//uart_puts("gf:");
+				//uart_dump_uint16_t (128);
+				//uart_putc(data[0]);
+				//uart_putc(data[1]);
+				//uart_putc(data[2]);
+				//uart_putc(data[3]);
+				//uart_puts(" ");
+				//print_uint8_t (data[1]);
+				//uart_puts(" ");
+				//print_uint8_t (data[2]);
+				//uart_puts(" ");
+				//print_uint8_t (data[3]);
+				//uart_puts("\r\n");
+
+				data_len = 0;
+				flag = 0;
+			}*/
+
+			/*if (ir_buffer_swapped()) {
+				uart_puts("IR Data: ");
+				for (uint8_t i=0; i<ir_process_buf->len; i++) {
+					//process the data
+					uart_putc(ir_process_buf->buf[i]);
+				}
+				uart_puts("\r\n");
+
+				//request a swap
+				ir_buffer_request_swap();
+			}*/
 
 //			unsigned char *buf = usb_get_in_buffer(1);
 			struct remote_buf_t* remote_buf = (struct remote_buf_t*) usb_get_in_buffer(1);

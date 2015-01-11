@@ -5,7 +5,7 @@ CC := xc8
 
 SUBMK = hal/ hal/m-stack cstdlib
 
-PROGRAMMER_IP := 192.168.0.122
+PROGRAMMER_IP := 192.168.1.122
 PROGRAMMER_USER := jonathan
 
 C_FILES := $(wildcard src/*.c)
