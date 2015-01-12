@@ -128,24 +128,15 @@ int main(void)
 		    !usb_in_endpoint_halted(1) &&
 		    !usb_in_endpoint_busy(1)) {
 
-			/*if (flag) {
-				//uart_puts("gf:");
-				//uart_dump_uint16_t (128);
-				//uart_putc(data[0]);
-				//uart_putc(data[1]);
-				//uart_putc(data[2]);
-				//uart_putc(data[3]);
-				//uart_puts(" ");
-				//print_uint8_t (data[1]);
-				//uart_puts(" ");
-				//print_uint8_t (data[2]);
-				//uart_puts(" ");
-				//print_uint8_t (data[3]);
-				//uart_puts("\r\n");
+			if (flag) {
+				uart_putc(bit_data[0]);
+				uart_putc(bit_data[1]);
+				uart_putc(bit_data[2]);
+				uart_putc(bit_data[3]);
 
-				data_len = 0;
+				bit_data_len = 0;
 				flag = 0;
-			}*/
+			}
 
 			/*if (ir_buffer_swapped()) {
 				uart_puts("IR Data: ");

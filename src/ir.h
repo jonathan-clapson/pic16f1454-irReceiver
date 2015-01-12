@@ -22,9 +22,9 @@ void ir_buffer_request_swap();
 // Returns true if data buffers have been swapped
 uint8_t ir_buffer_swapped();
 
-extern volatile uint8_t data[4];
+extern volatile uint8_t bit_data[4];
 extern volatile uint8_t flag;
-extern volatile uint8_t data_len;
+extern volatile uint8_t bit_data_len;
 
 #endif // __IR_H__
 

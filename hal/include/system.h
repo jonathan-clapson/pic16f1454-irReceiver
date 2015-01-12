@@ -30,4 +30,12 @@
 
 int system_init();
 
+//#define __DEBUG
+
+#ifdef __DEBUG
+#define DEBUG_MSG(x) uart_puts(x)
+#else
+#define DEBUG_MSG(x) {if(0);}
+#endif
+
 #endif /* __SYSTEM_H__ */

@@ -10,6 +10,8 @@
  * @copyright GNU GENERAL PUBLIC LICENSE version 2
  */
 
+#include <system.h>
+
 #include <xc.h>
 #include <string.h>
 #include <irq.h>
@@ -59,7 +61,7 @@ int irq_register_handler (int irq, void (*irq_handler_func)(void))
 	if (irq_handlers[irq] != NULL)
 		return IRQ_ERR_ALREADY_REGISTERED;
 
-	uart_puts("reg\n");
+	DEBUG_MSG("reg\n");
 
 	irq_handlers[irq] = irq_handler_func;
 

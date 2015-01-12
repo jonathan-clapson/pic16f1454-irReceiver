@@ -1,3 +1,5 @@
+#include <system.h>
+
 #include <string.h>
 #include <uart.h>
 
@@ -18,14 +20,6 @@
 #define IR_TIME_DATA_HIGH_MIN 3000
 #define IR_TIME_DATA_LOW_MAX 3000
 #define IR_TIME_DATA_LOW_MIN 600
-
-#define __DEBUG
-
-#ifdef __DEBUG
-#define DEBUG_MSG(x) uart_puts(x)
-#else
-#define DEBUG_MSG(x) {if(0);}
-#endif
 
 enum ir_state_t {
 	IR_WAIT_AGC = -2,
@@ -83,14 +77,14 @@ void ir_buffer_swap()
 void bitStoreWrite(uint8_t *bitStore, uint8_t bitIndex, uint8_t val)
 {
 	if (val)
-		bitStore[bitIndex>>3] |= (0x1 << (bitIndex & 0x7));
+		bitStore[bitIndex>>3] |= (0x80 >> (bitIndex & 0x7));
 	else
-		bitStore[bitIndex>>3] &= (0x1 << ~(bitIndex & 0x7));
+		bitStore[bitIndex>>3] &= ~(0x80 >> (bitIndex & 0x7));
 }
 
-volatile uint8_t data[4];
+volatile uint8_t bit_data[4];
 volatile uint8_t flag = 0;
-volatile uint8_t data_len = 0;
+volatile uint8_t bit_data_len = 0;
 
 /*
  * Initialise ir algorithm
@@ -181,7 +175,7 @@ void ir_isr()
 
 		// check if the initial processing detected a repeat code, if so, see if ir data processing is ready to take it.
 		if (ir_isr_buf->repeat) {
-			DEBUG_MSG("sig rpt\r\n");
+			DEBUG_MSG("rpt\r\n");
 			if (switch_req) {
 				ir_buffer_swap();
 				switch_req = 0;
@@ -195,7 +189,7 @@ void ir_isr()
 		// Begin Data Processing :D
 
 		// If we've already got all bits then spin here until new IR Start detected or mains ready to swap
-		if (ir_isr_buf->len >= IR_BITS_PER_TRANSMISSION) {
+		/*if (ir_isr_buf->len >= IR_BITS_PER_TRANSMISSION) {
 			flag = 1;
 			if (switch_req) {
 				ir_buffer_swap();
@@ -203,13 +197,13 @@ void ir_isr()
 			}
 			DEBUG_MSG("done\r\n");
 			goto reset_timer;
-		}
+		}*/
 
-		/*if (data_len >= IR_BITS_PER_TRANSMISSION) {
+		if (bit_data_len >= IR_BITS_PER_TRANSMISSION) {
 			flag = 1;
 
 			goto reset_timer;
-		}*/
+		}
 
 		// if the time since the last data is very short, then low pass filter it. Currently getting one weird bit that does its own thing :S (maybe its noise?)
 		uint16_t diff = ellapsed - last_low_pass_time;
@@ -233,26 +227,25 @@ void ir_isr()
 				//ir_isr_buf->len=0;
 				//ir_isr_buf->buf[ir_isr_buf->len++] = 1;
 
-				//if ((data_len < IR_BITS_PER_TRANSMISSION) && (!flag))
-					//bitStoreWrite(data, data_len++, 1);
-				//data[data_len++] = 1;
-				//uart_putc(data[0]);
+				if ((bit_data_len < IR_BITS_PER_TRANSMISSION) && (!flag))
+					bitStoreWrite(bit_data, bit_data_len++, 1);
 
 				LATA4=1;
-				DEBUG_MSG("h");
+				uart_puts("1");
+				//uart_putc(bit_data[0]);
+				DEBUG_MSG("1");
 				goto reset_timer;
 			} else if ( (ellapsed<IR_TIME_DATA_LOW_MAX) && (ellapsed>IR_TIME_DATA_LOW_MIN) ) {
 				//ir_isr_buf->len=0;
 				//ir_isr_buf->buf[ir_isr_buf->len++] = 0;
 
-				//if ((data_len < IR_BITS_PER_TRANSMISSION) && (!flag))
-				//	bitStoreWrite(data, data_len++, 0);
-
-				//data[data_len++] = 0;
-				//uart_putc(data[0]);
+				if ((bit_data_len < IR_BITS_PER_TRANSMISSION) && (!flag))
+					bitStoreWrite(bit_data, bit_data_len++, 0);
 
 				LATA4=0;
-				DEBUG_MSG("l");
+				uart_puts("0");
+				//uart_putc(bit_data[0]);
+				DEBUG_MSG("0");
 				goto reset_timer;
 			} else { // bit is wrong size!
 				DEBUG_MSG("IR DATA: bit length error");
